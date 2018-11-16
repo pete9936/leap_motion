@@ -1,12 +1,4 @@
 #################################################################################
-# Copyright (C) 2012-2013 Leap Motion, Inc. All rights reserved.                #
-# Leap Motion proprietary and confidential. Not for distribution.               #
-# Use subject to the terms of the Leap Motion SDK Agreement available at        #
-# https://developer.leapmotion.com/sdk_agreement, or another agreement          #
-# between Leap Motion and you, your company or other organization.              #
-#################################################################################
-
-#################################################################################
 # Altered LEAP example by Florian Lier, you need to have the LEAP SDK installed #
 # for this to work properly ;)                                                  #
 # This interface provides access to the LEAP MOTION hardware, you will need to  #
@@ -25,12 +17,13 @@ import time
 
 # Below, you can see the "dirty" version - NOT RECOMMENDED!
 
-# sys.path.append("/home/YOUR_NAME/path/to/Leap_Developer/LeapSDK/lib")
-# sys.path.append("/home/YOUR_NAME/path/to/Leap_Developer/Leap_Developer/LeapSDK/lib/x64")
+
+sys.path.append("/home/pete9936/catkin_ws/src/leap_motion/LeapSDK/lib")
+sys.path.append("/home/pete9936/catkin_ws/src/leap_motion/LeapSDK/lib/x64")
 import threading
 import Leap
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
-
+'''
 class LeapFinger():
     def __init__(self, finger=None):
         self.boneNames = ['metacarpal',
@@ -56,7 +49,7 @@ class LeapFinger():
             setattr(self, boneName, bone.prev_joint.to_float_array())
         # For the tip, get the end of the distal bone
         self.tip = finger.bone(Leap.Bone.TYPE_DISTAL).next_joint.to_float_array()
-
+'''
 
 
 class LeapInterface(Leap.Listener):
@@ -72,9 +65,9 @@ class LeapInterface(Leap.Listener):
         self.hand_pitch     = 0.0
         self.hand_yaw       = 0.0
         self.hand_roll      = 0.0
-        self.fingerNames = ['thumb', 'index', 'middle', 'ring', 'pinky']
-        for fingerName in self.fingerNames:
-            setattr(self, fingerName, LeapFinger())
+       # self.fingerNames = ['thumb', 'index', 'middle', 'ring', 'pinky']
+       # for fingerName in self.fingerNames:
+       #     setattr(self, fingerName, LeapFinger()) 
         print "Initialized Leap Motion Device"
 
     def on_connect(self, controller):
@@ -97,8 +90,9 @@ class LeapInterface(Leap.Listener):
         # Get the most recent frame and report some basic information
         frame = controller.frame()
 
-        print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
-              frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
+        # print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
+
+	print "Frame id: %d, hands: %d, gestures: %d" % (frame.id, len(frame.hands), len(frame.gestures()))
 
         if not frame.hands.is_empty: #recently changed in API
             # Get the first hand
@@ -115,7 +109,6 @@ class LeapInterface(Leap.Listener):
                     self.right_hand=hand
                 elif hand.is_left:
                     there_is_left_hand=True
-
                     self.left_hand=hand
 
             if not there_is_right_hand:
@@ -127,13 +120,13 @@ class LeapInterface(Leap.Listener):
             self.hand = frame.hands[0] #old way
 
             # Check if the hand has any fingers
-            fingers = self.hand.fingers
-            if not fingers.is_empty:
-                for fingerName in self.fingerNames:
-                    #finger = fingers.finger_type(Leap.Finger.TYPE_THUMB)[0]
-                    #self.thumb.importFinger(finger)
-                    finger = fingers.finger_type(getattr(Leap.Finger, 'TYPE_%s' % fingerName.upper()))[0]
-                    getattr(self, fingerName).importFinger(finger)
+            # fingers = self.hand.fingers
+            # if not fingers.is_empty:
+            #    for fingerName in self.fingerNames:
+            #        #finger = fingers.finger_type(Leap.Finger.TYPE_THUMB)[0]
+            #        #self.thumb.importFinger(finger)
+            #        finger = fingers.finger_type(getattr(Leap.Finger, 'TYPE_%s' % fingerName.upper()))[0]
+            #        getattr(self, fingerName).importFinger(finger)
 
             # Get the hand's sphere radius and palm position
             # print "Hand sphere radius: %f mm, palm position: %s" % (self.hand.sphere_radius, hand.palm_position)
@@ -158,6 +151,15 @@ class LeapInterface(Leap.Listener):
 
             # Calculate the hand's pitch, roll, and yaw angles
             print "Hand pitch: %f degrees, roll: %f degrees, yaw: %f degrees" % (self.hand_pitch, self.hand_roll, self.hand_yaw)
+
+	    # print "Hand Direction: x-pos: %f, y-pos: %f, z-pos: %f" % (self.hand_palm_pos[0], self.hand_palm_pos[1], self.hand_palm_pos[2])
+
+	    # Write to a .txt file
+	    # f= open("Hand_Directions.txt","w+")
+            f=open("Hand_Info.txt","a+")
+            f.write("\n" + "Hand_Ori (deg):\t pitch: %3.2f, roll: %3.2f, yaw: %3.2f" % (self.hand_pitch, self.hand_roll, self.hand_yaw))
+	    f.write("\n" + "Hand Dir (mm):\t x-pos: %3.2f, y-pos: %3.2f, z-pos: %3.2f" % (self.hand_palm_pos[0], self.hand_palm_pos[1], self.hand_palm_pos[2]))
+            f.close()
 
             '''
             # Gestures
@@ -234,8 +236,8 @@ class LeapInterface(Leap.Listener):
     def get_hand_roll(self):
         return self.hand_roll
 
-    def get_finger_point(self, fingerName, fingerPointName):
-        return getattr(getattr(self, fingerName), fingerPointName)
+    # def get_finger_point(self, fingerName, fingerPointName):
+    #    return getattr(getattr(self, fingerName), fingerPointName)
 
 
 class Runner(threading.Thread):
@@ -268,8 +270,8 @@ class Runner(threading.Thread):
     def get_hand_yaw(self):
         return self.listener.get_hand_yaw()
 
-    def get_finger_point(self, fingerName, fingerPointName):
-        return self.listener.get_finger_point(fingerName, fingerPointName)
+    # def get_finger_point(self, fingerName, fingerPointName):
+    #    return self.listener.get_finger_point(fingerName, fingerPointName)
 
     def run (self):
         while True:
