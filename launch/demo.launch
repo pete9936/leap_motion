@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 
     <!-- Load the listener parameters and start the driver node -->

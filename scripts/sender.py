@@ -24,7 +24,6 @@ def sender():
     li.start()
     pub_ros   = rospy.Publisher('leapmotion/data',leapros, queue_size=2)
     rospy.init_node(NODENAME)
-    # rate = rospy.Rate(5) # 5hz (Does nothing)
 
     while not rospy.is_shutdown():
         hand_direction_   = li.get_hand_direction()
@@ -33,6 +32,7 @@ def sender():
         hand_pitch_       = li.get_hand_pitch()
         hand_roll_        = li.get_hand_roll()
         hand_yaw_         = li.get_hand_yaw()
+	hands_  	  = li.get_hands()
 
         msg = leapros()
         msg.direction.x = hand_direction_[0]
@@ -47,9 +47,9 @@ def sender():
         msg.ypr.x = hand_yaw_
         msg.ypr.y = hand_pitch_
         msg.ypr.z = hand_roll_
+	msg.hands = hands_
 
         pub_ros.publish(msg)
-	# rate.sleep() # (Does Nothing)
         rospy.sleep(rospy.get_param(PARAMNAME_FREQ_ENTIRE, FREQUENCY_ROSTOPIC_DEFAULT))
 
 
